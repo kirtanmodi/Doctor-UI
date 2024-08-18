@@ -32,17 +32,23 @@ export default function RootLayout() {
         }}
       />
       <Tabs.Screen
+        name="appointment"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="virtualConsultation"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
         name="home"
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="appointment"
-        options={{
-          title: "Appointment",
-          tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen

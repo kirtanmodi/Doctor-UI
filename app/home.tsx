@@ -15,6 +15,10 @@ const Home = () => {
     router.push("/appointment");
   };
 
+  const handleVirtualConsultation = () => {
+    router.push("/virtualConsultation");
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor }}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -27,7 +31,7 @@ const Home = () => {
             <Ionicons name="calendar" size={24} color={backgroundColor} />
             <ThemedText style={styles.actionButtonText}>Schedule Appointment</ThemedText>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: tintColor }]}>
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: tintColor }]} onPress={handleVirtualConsultation}>
             <Ionicons name="videocam" size={24} color={backgroundColor} />
             <ThemedText style={styles.actionButtonText}>Virtual Consultation</ThemedText>
           </TouchableOpacity>
