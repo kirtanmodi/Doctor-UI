@@ -19,7 +19,6 @@ export default function RootLayout() {
           borderTopWidth: 0,
           elevation: 0,
           shadowOpacity: 0,
-          display: pathname === "/auth" ? "none" : "flex",
         },
         tabBarActiveTintColor: tintColor,
         tabBarInactiveTintColor: tabIconDefault,
@@ -46,10 +45,10 @@ export default function RootLayout() {
       <Tabs.Screen
         name="products"
         options={{
-          href: null,
+          title: "Products",
+          tabBarIcon: ({ color, size }) => <Ionicons name="cart-outline" size={size} color={color} />,
         }}
       />
-
       <Tabs.Screen
         name="home"
         options={{
@@ -67,8 +66,7 @@ export default function RootLayout() {
       <Tabs.Screen
         name="auth"
         options={{
-          title: "Log out",
-          tabBarIcon: ({ color, size }) => <Ionicons name="log-out" size={size} color={color} />,
+          href: null,
         }}
       />
     </Tabs>
