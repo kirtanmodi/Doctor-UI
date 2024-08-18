@@ -57,6 +57,13 @@ export default function RootLayout() {
         }}
       />
       <Tabs.Screen
+        name="beforeAfterGallery"
+        options={{
+          title: "Gallery",
+          tabBarIcon: ({ color, size }) => <Ionicons name="images-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
