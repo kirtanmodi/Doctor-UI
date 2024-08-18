@@ -44,13 +44,15 @@ const Home = () => {
           <ThemedText>20% off on all skincare consultations this week!</ThemedText>
         </ThemedView>
 
-        <ThemedView style={styles.sectionContainer}>
-          <ThemedText style={styles.sectionTitle} type="subtitle">
-            Featured Products
-          </ThemedText>
-          <ThemedText>Advanced Hydrating Serum</ThemedText>
-          <ThemedText>Anti-Aging Night Cream</ThemedText>
-        </ThemedView>
+        <TouchableOpacity onPress={() => router.push("/products")}>
+          <ThemedView style={styles.sectionContainer}>
+            <ThemedText style={styles.sectionTitle} type="subtitle">
+              Featured Products
+            </ThemedText>
+            <ThemedText>Advanced Hydrating Serum</ThemedText>
+            <ThemedText>Anti-Aging Night Cream</ThemedText>
+          </ThemedView>
+        </TouchableOpacity>
 
         <ThemedView style={styles.sectionContainer}>
           <ThemedText style={styles.sectionTitle} type="subtitle">

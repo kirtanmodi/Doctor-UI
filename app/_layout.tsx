@@ -43,6 +43,12 @@ export default function RootLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="products"
+        options={{
+          href: null,
+        }}
+      />
 
       <Tabs.Screen
         name="home"
