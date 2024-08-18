@@ -183,6 +183,10 @@ const AppointmentScreen: React.FC = () => {
           />
         </ThemedView>
 
+        {renderSelectButton("Select Time", selectedTime, () => openModal("time"))}
+        {renderSelectButton("Select Doctor", selectedDoctor, () => openModal("doctor"))}
+        {renderSelectButton("Select Appointment Type", selectedType, () => openModal("type"))}
+
         <ThemedView style={styles.summaryContainer}>
           <ThemedText style={styles.summaryTitle} type="subtitle">
             Appointment Summary
@@ -192,10 +196,6 @@ const AppointmentScreen: React.FC = () => {
           <ThemedText>Doctor: {selectedDoctor || "Not selected"}</ThemedText>
           <ThemedText>Type: {selectedType || "Not selected"}</ThemedText>
         </ThemedView>
-
-        {renderSelectButton("Select Time", selectedTime, () => openModal("time"))}
-        {renderSelectButton("Select Doctor", selectedDoctor, () => openModal("doctor"))}
-        {renderSelectButton("Select Appointment Type", selectedType, () => openModal("type"))}
 
         <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
           <View
