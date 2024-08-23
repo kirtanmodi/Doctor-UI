@@ -4,13 +4,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { usePathname } from "expo-router";
 import { LanguageProvider } from "@/context/LanguageContext";
-// import { LanguageProvider } from "@/contexts/LanguageContext";
+import { BlurView } from "expo-blur";
+import { View, StyleSheet } from "react-native";
 
 export default function RootLayout() {
   const tintColor = useThemeColor({}, "tint");
   const backgroundColor = useThemeColor({}, "background");
   const tabIconDefault = useThemeColor({}, "tabIconDefault");
-  const pathname = usePathname();
 
   return (
     <LanguageProvider>
@@ -18,13 +18,26 @@ export default function RootLayout() {
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: backgroundColor,
-            borderTopWidth: 0,
+            position: "absolute",
+            bottom: 25,
+            left: 20,
+            right: 20,
             elevation: 0,
-            shadowOpacity: 0,
+            borderTopWidth: 0,
+            height: 60,
+            borderRadius: 30,
+            paddingBottom: 0,
+            overflow: "hidden",
           },
+          tabBarBackground: () => <BlurView tint="dark" intensity={75} style={StyleSheet.absoluteFillObject} />,
           tabBarActiveTintColor: tintColor,
-          tabBarInactiveTintColor: tabIconDefault,
+          tabBarInactiveTintColor: "rgba(255, 255, 255, 0.6)",
+          tabBarShowLabel: false,
+          tabBarItemStyle: {
+            padding: 0,
+            marginTop: 0,
+            marginBottom: 0,
+          },
         })}
       >
         <Tabs.Screen
@@ -48,37 +61,47 @@ export default function RootLayout() {
         <Tabs.Screen
           name="home"
           options={{
-            title: "Home",
-            tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
+            tabBarIcon: ({ color, focused }) => (
+              <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+                <Ionicons name="home" size={24} color={color} />
+              </View>
+            ),
           }}
         />
         <Tabs.Screen
           name="products"
           options={{
-            title: "Products",
-            tabBarIcon: ({ color, size }) => <Ionicons name="cart-outline" size={size} color={color} />,
+            tabBarIcon: ({ color, focused }) => (
+              <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+                <Ionicons name="cart" size={24} color={color} />
+              </View>
+            ),
           }}
         />
         <Tabs.Screen
           name="beforeAfterGallery"
           options={{
-            title: "Gallery",
-            tabBarIcon: ({ color, size }) => <Ionicons name="images-outline" size={size} color={color} />,
+            tabBarIcon: ({ color, focused }) => (
+              <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+                <Ionicons name="images" size={24} color={color} />
+              </View>
+            ),
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
-            title: "Profile",
-            tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
+            tabBarIcon: ({ color, focused }) => (
+              <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+                <Ionicons name="person" size={24} color={color} />
+              </View>
+            ),
           }}
         />
         <Tabs.Screen
           name="chatSupport"
           options={{
             href: null,
-            // title: "Support",
-            // tabBarIcon: ({ color, size }) => <Ionicons name="chatbubbles-outline" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
@@ -96,16 +119,17 @@ export default function RootLayout() {
         <Tabs.Screen
           name="feedbackReviews"
           options={{
-            title: "Feedback",
-            tabBarIcon: ({ color, size }) => <Ionicons name="star-outline" size={size} color={color} />,
+            tabBarIcon: ({ color, focused }) => (
+              <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+                <Ionicons name="star" size={24} color={color} />
+              </View>
+            ),
           }}
         />
         <Tabs.Screen
           name="notifications"
           options={{
             href: null,
-            // title: "Feedback",
-            // tabBarIcon: ({ color, size }) => <Ionicons name="star-outline" size={size} color={color} />,
           }}
         />
         <Tabs.Screen
@@ -118,3 +142,16 @@ export default function RootLayout() {
     </LanguageProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    width: 50,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 25,
+  },
+  activeIconContainer: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+  },
+});
