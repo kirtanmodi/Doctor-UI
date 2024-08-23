@@ -17,7 +17,7 @@ export const Header = ({ t }: { t: (key: string) => string }) => {
   return (
     <ImageBackground
       source={{
-        uri: "https://img.freepik.com/free-photo/woman-doctor-wearing-lab-coat-with-stethoscope-isolated_1303-29791.jpg?size=626&ext=jpg&ga=GA1.1.1494512934.1721340923&semt=ais_hybrid",
+        uri: "https://st3.depositphotos.com/16122460/34043/i/450/depositphotos_340438794-stock-photo-pink-ribbon-breast-cancer-awareness.jpg",
       }}
       style={styles.headerBackground}
     >

@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
   offerCard: {
     borderRadius: 15,
     overflow: "hidden",
-    marginHorizontal: 20,
+
     marginBottom: 20,
   },
   offerImage: {

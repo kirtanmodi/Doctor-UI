@@ -1,21 +1,29 @@
 import React from "react";
-import { StyleSheet, TouchableOpacity, ImageBackground, View } from "react-native";
+import { View, StyleSheet, ImageBackground, TouchableOpacity } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
+import { useThemeColor } from "@/hooks/useThemeColor";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 
 export const EducationCard: React.FC = () => {
+  const tintColor = useThemeColor({}, "tint");
   const router = useRouter();
 
   return (
-    <TouchableOpacity style={styles.educationCard} onPress={() => router.push("/educationalContent")}>
+    <TouchableOpacity onPress={() => router.push("/educationalContent")}>
       <ImageBackground
         source={{ uri: "https://joyalbeauty.com/cdn/shop/articles/MORNING_REGIMEN_1024x.png?v=1708782720" }}
-        style={styles.educationImage}
+        style={styles.card}
+        imageStyle={styles.image}
       >
-        <LinearGradient colors={["rgba(0,0,0,0.7)", "transparent"]} style={styles.educationGradient}>
-          <ThemedText style={styles.educationTitle}>Educational Content</ThemedText>
-          <ThemedText style={styles.educationDescription}>Explore skincare tips and tutorials</ThemedText>
+        <LinearGradient colors={["rgba(0,0,0,0.6)", "transparent"]} style={styles.gradient}>
+          <View style={styles.content}>
+            <ThemedText style={styles.title}>Skin Care Education</ThemedText>
+            <ThemedText style={styles.description}>Learn about the best practices for your skin type</ThemedText>
+            <TouchableOpacity style={[styles.button, { backgroundColor: tintColor }]}>
+              <ThemedText style={styles.buttonText}>Explore</ThemedText>
+            </TouchableOpacity>
+          </View>
         </LinearGradient>
       </ImageBackground>
     </TouchableOpacity>
@@ -23,29 +31,41 @@ export const EducationCard: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  educationCard: {
-    borderRadius: 15,
+  card: {
+    height: 200,
+    marginVertical: 15,
+    borderRadius: 20,
     overflow: "hidden",
-    marginHorizontal: 20,
-    marginBottom: 20,
   },
-  educationImage: {
-    width: "100%",
-    height: 150,
+  image: {
+    resizeMode: "cover",
   },
-  educationGradient: {
+  gradient: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-end",
+  },
+  content: {
     padding: 20,
   },
-  educationTitle: {
-    color: "white",
+  title: {
     fontSize: 24,
     fontWeight: "bold",
+    color: "white",
     marginBottom: 5,
   },
-  educationDescription: {
-    color: "white",
+  description: {
     fontSize: 16,
+    color: "white",
+    marginBottom: 10,
+  },
+  button: {
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    alignSelf: "flex-start",
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "bold",
   },
 });
