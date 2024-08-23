@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Camera } from "expo-camera";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { ThemedText } from "../components/ThemedText";
+import { BlurView } from "expo-blur";
 
 const VirtualConsultation: React.FC = () => {
   const [isCallActive, setIsCallActive] = useState(false);
@@ -96,7 +97,7 @@ const VirtualConsultation: React.FC = () => {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor, paddingBottom: 80 }]}>
       <View style={styles.videoContainer}>
         {isCallActive ? (
           <Video
@@ -109,27 +110,31 @@ const VirtualConsultation: React.FC = () => {
             shouldPlay
           />
         ) : (
-          <View style={[styles.placeholderVideo, { backgroundColor: tintColor }]}>
-            <Ionicons name="videocam" size={64} color={backgroundColor} />
-          </View>
+          <BlurView intensity={80} tint="dark" style={styles.placeholderVideo}>
+            <Ionicons name="videocam" size={64} color={tintColor} />
+          </BlurView>
         )}
       </View>
 
-      <View style={styles.controlsContainer}>
+      <BlurView intensity={30} tint="dark" style={styles.controlsContainer}>
         {isCallActive ? (
           <>
-            <TouchableOpacity style={[styles.controlButton, { backgroundColor: isMuted ? tintColor : "transparent" }]} onPress={toggleMute}>
-              <Ionicons name={isMuted ? "mic-off" : "mic"} size={24} color={isMuted ? backgroundColor : tintColor} />
+            <TouchableOpacity style={[styles.controlButton, { marginBottom: 80 }]} onPress={toggleMute}>
+              <Ionicons name={isMuted ? "mic-off" : "mic"} size={24} color={tintColor} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.controlButton, { backgroundColor: "red" }]} onPress={handleEndCall}>
-              <Ionicons name="call" size={24} color={backgroundColor} />
+            <TouchableOpacity style={[styles.controlButton, styles.endCallButton, { marginBottom: 80 }]} onPress={handleEndCall}>
+              <Ionicons name="call" size={24} color="#fff" />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.controlButton, { backgroundColor: isVideoEnabled ? "transparent" : tintColor }]} onPress={toggleVideo}>
-              <Ionicons name={isVideoEnabled ? "videocam" : "videocam-off"} size={24} color={isVideoEnabled ? tintColor : backgroundColor} />
+            <TouchableOpacity style={[styles.controlButton, { marginBottom: 80 }]} onPress={toggleVideo}>
+              <Ionicons name={isVideoEnabled ? "videocam" : "videocam-off"} size={24} color={tintColor} />
             </TouchableOpacity>
           </>
         ) : (
-          <TouchableOpacity style={[styles.startCallButton, { backgroundColor: tintColor }]} onPress={handleStartCall} disabled={isLoading}>
+          <TouchableOpacity
+            style={[styles.startCallButton, { backgroundColor: tintColor, marginBottom: 80 }]}
+            onPress={handleStartCall}
+            disabled={isLoading}
+          >
             {isLoading ? (
               <ActivityIndicator color={backgroundColor} />
             ) : (
@@ -140,34 +145,34 @@ const VirtualConsultation: React.FC = () => {
             )}
           </TouchableOpacity>
         )}
-      </View>
+      </BlurView>
 
       {isCallActive && (
-        <View style={styles.notesContainer}>
+        <BlurView intensity={30} tint="dark" style={(styles.notesContainer, { marginBottom: 80 })}>
           <TextInput
-            style={[styles.notesInput, { color: textColor, borderColor: tintColor }]}
+            style={[styles.notesInput, { color: textColor, borderColor: `${textColor}40` }]}
             placeholder="Consultation Notes"
-            placeholderTextColor={textColor + "80"}
+            placeholderTextColor={`${textColor}80`}
             multiline
             value={consultationNotes}
             onChangeText={setConsultationNotes}
           />
-          <TouchableOpacity style={[styles.saveButton, { backgroundColor: tintColor }]} onPress={handleSaveNotes}>
+          <TouchableOpacity style={[styles.saveButton, { backgroundColor: tintColor, marginBottom: 80 }]} onPress={handleSaveNotes}>
             <ThemedText style={[styles.saveButtonText, { color: backgroundColor }]}>Save Notes</ThemedText>
           </TouchableOpacity>
 
           <TextInput
-            style={[styles.notesInput, { color: textColor, borderColor: tintColor }]}
+            style={[styles.notesInput, { color: textColor, borderColor: `${textColor}40` }]}
             placeholder="Prescription & Recommendations"
-            placeholderTextColor={textColor + "80"}
+            placeholderTextColor={`${textColor}80`}
             multiline
             value={prescription}
             onChangeText={setPrescription}
           />
-          <TouchableOpacity style={[styles.saveButton, { backgroundColor: tintColor }]} onPress={handleSavePrescription}>
+          <TouchableOpacity style={[styles.saveButton, { backgroundColor: tintColor, marginBottom: 80 }]} onPress={handleSavePrescription}>
             <ThemedText style={[styles.saveButtonText, { color: backgroundColor }]}>Save Prescription</ThemedText>
           </TouchableOpacity>
-        </View>
+        </BlurView>
       )}
     </SafeAreaView>
   );
@@ -197,6 +202,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   controlButton: {
     width: 50,
@@ -205,15 +214,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginHorizontal: 10,
-    borderWidth: 1,
-    borderColor: "transparent",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  },
+  endCallButton: {
+    backgroundColor: "rgba(255, 0, 0, 0.6)",
   },
   startCallButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 25,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 30,
   },
   startCallText: {
     marginLeft: 10,
@@ -222,6 +233,11 @@ const styles = StyleSheet.create({
   },
   notesContainer: {
     padding: 20,
+    position: "absolute",
+    bottom: 100,
+    left: 20,
+    right: 20,
+    borderRadius: 15,
   },
   notesInput: {
     height: 100,
@@ -229,10 +245,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     marginBottom: 10,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
   saveButton: {
-    padding: 10,
-    borderRadius: 5,
+    padding: 12,
+    borderRadius: 8,
     alignItems: "center",
     marginBottom: 20,
   },

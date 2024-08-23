@@ -1,232 +1,184 @@
-import React, { useState, useCallback } from "react";
-import { ScrollView, StyleSheet, View, TouchableOpacity, Modal, FlatList, Alert } from "react-native";
+import React, { useState, useCallback, useMemo } from "react";
+import { ScrollView, StyleSheet, View, Alert, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { Calendar } from "react-native-calendars";
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { useSharedValue } from "react-native-reanimated";
+import { DateData } from "react-native-calendars";
+import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { ThemedText } from "@/components/ThemedText";
+import AppointmentHeader from "@/components/appointment/AppointmentHeader";
+import AppointmentCalendar from "@/components/appointment/AppointmentCalendar";
+import AppointmentSelections from "@/components/appointment/AppointmentSelections";
+import AppointmentSummary from "@/components/appointment/AppointmentSummary";
+import ConfirmButton from "@/components/appointment/ConfirmButton";
+import SelectionModal from "@/components/appointment/SelectionModal";
+import { BlurView } from "expo-blur";
 
 interface Doctor {
   id: number;
   name: string;
+  specialty: string;
+  image: string;
 }
 
 interface AppointmentType {
   id: number;
   name: string;
+  icon: string;
 }
 
 const doctors: Doctor[] = [
-  { id: 1, name: "Dr. Smith" },
-  { id: 2, name: "Dr. Johnson" },
-  { id: 3, name: "Dr. Williams" },
+  { id: 1, name: "Dr. Smith", specialty: "Dermatologist", image: "https://example.com/dr-smith.jpg" },
+  { id: 2, name: "Dr. Johnson", specialty: "Plastic Surgeon", image: "https://example.com/dr-johnson.jpg" },
+  { id: 3, name: "Dr. Williams", specialty: "Esthetician", image: "https://example.com/dr-williams.jpg" },
 ];
 
 const appointmentTypes: AppointmentType[] = [
-  { id: 1, name: "In-person Consultation" },
-  { id: 2, name: "Virtual Consultation" },
+  { id: 1, name: "In-person Consultation", icon: "people" },
+  { id: 2, name: "Virtual Consultation", icon: "videocam" },
 ];
 
-const timeSlots: string[] = ["9:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:00 PM", "4:00 PM"];
+const timeSlots: string[] = ["9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM"];
 
-const useModalState = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [content, setContent] = useState<"doctor" | "type" | "time" | null>(null);
-
-  const openModal = useCallback((newContent: "doctor" | "type" | "time") => {
-    setContent(newContent);
-    setIsVisible(true);
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setIsVisible(false);
-    setContent(null);
-  }, []);
-
-  return { isVisible, content, openModal, closeModal };
-};
-
-const useAppointmentState = () => {
-  const [selectedDate, setSelectedDate] = useState<string>("");
-  const [selectedDoctor, setSelectedDoctor] = useState<string>("");
-  const [selectedType, setSelectedType] = useState<string>("");
-  const [selectedTime, setSelectedTime] = useState<string>("");
-
-  const isAppointmentComplete = useCallback(() => {
-    return Boolean(selectedDate && selectedDoctor && selectedType && selectedTime);
-  }, [selectedDate, selectedDoctor, selectedType, selectedTime]);
-
-  return {
-    selectedDate,
-    setSelectedDate,
-    selectedDoctor,
-    setSelectedDoctor,
-    selectedType,
-    setSelectedType,
-    selectedTime,
-    setSelectedTime,
-    isAppointmentComplete,
-  };
-};
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const AppointmentScreen: React.FC = () => {
-  const { isVisible, content, openModal, closeModal } = useModalState();
-  const {
-    selectedDate,
-    setSelectedDate,
-    selectedDoctor,
-    setSelectedDoctor,
-    selectedType,
-    setSelectedType,
-    selectedTime,
-    setSelectedTime,
-    isAppointmentComplete,
-  } = useAppointmentState();
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const [selectedType, setSelectedType] = useState<AppointmentType | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalContent, setModalContent] = useState<"doctor" | "type" | "time" | null>(null);
 
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
   const tintColor = useThemeColor({}, "tint");
-  const borderColor = useThemeColor({}, "tint");
+  const accentColor = useThemeColor({}, "accent");
+
+  const animatedIndex = useSharedValue(0);
 
   const handleConfirm = useCallback(() => {
-    if (!isAppointmentComplete()) {
+    if (!selectedDate || !selectedDoctor || !selectedType || !selectedTime) {
       Alert.alert("Incomplete Information", "Please fill in all fields before confirming.");
       return;
     }
 
-    // Here you would typically send the appointment data to your backend
     console.log("Appointment confirmed:", { selectedDate, selectedDoctor, selectedType, selectedTime });
-
-    // Navigate back to home screen or to a confirmation screen
     router.push("/home");
-  }, [selectedDate, selectedDoctor, selectedType, selectedTime, isAppointmentComplete]);
+  }, [selectedDate, selectedDoctor, selectedType, selectedTime]);
+
+  const openModal = useCallback((content: "doctor" | "type" | "time") => {
+    setModalContent(content);
+    setModalVisible(true);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setModalVisible(false);
+    setModalContent(null);
+  }, []);
+
+  const handleScroll = useCallback(
+    (event: { nativeEvent: { contentOffset: { y: number } } }) => {
+      const scrollY = event.nativeEvent.contentOffset.y;
+      animatedIndex.value = scrollY > 50 ? 1 : 0;
+    },
+    [animatedIndex]
+  );
+
+  const markedDates = useMemo(() => {
+    return {
+      [selectedDate]: { selected: true, selectedColor: tintColor },
+    };
+  }, [selectedDate, tintColor]);
 
   const renderModalContent = useCallback(() => {
-    let data: any[] = [];
-    let onSelect: (item: any) => void;
-
-    switch (content) {
+    switch (modalContent) {
       case "doctor":
-        data = doctors;
-        onSelect = (item: Doctor) => setSelectedDoctor(item.name);
-        break;
+        return (
+          <SelectionModal
+            visible={modalVisible}
+            onClose={closeModal}
+            data={doctors}
+            onSelect={setSelectedDoctor}
+            renderItem={(item: Doctor) => (
+              <>
+                <ThemedText style={styles.modalItemText}>{item.name}</ThemedText>
+                <ThemedText style={styles.modalItemSubtext}>{item.specialty}</ThemedText>
+              </>
+            )}
+            backgroundColor={backgroundColor}
+            textColor={textColor}
+          />
+        );
       case "type":
-        data = appointmentTypes;
-        onSelect = (item: AppointmentType) => setSelectedType(item.name);
-        break;
+        return (
+          <SelectionModal
+            visible={modalVisible}
+            onClose={closeModal}
+            data={appointmentTypes}
+            onSelect={setSelectedType}
+            renderItem={(item: AppointmentType) => (
+              <>
+                <Ionicons name={item.icon as any} size={24} color={tintColor} style={styles.modalItemIcon} />
+                <ThemedText style={styles.modalItemText}>{item.name}</ThemedText>
+              </>
+            )}
+            backgroundColor={backgroundColor}
+            textColor={textColor}
+          />
+        );
       case "time":
-        data = timeSlots;
-        onSelect = (item: string) => setSelectedTime(item);
-        break;
+        return (
+          <SelectionModal
+            visible={modalVisible}
+            onClose={closeModal}
+            data={timeSlots}
+            onSelect={setSelectedTime}
+            renderItem={(item: string) => <ThemedText style={styles.modalItemText}>{item}</ThemedText>}
+            backgroundColor={backgroundColor}
+            textColor={textColor}
+          />
+        );
       default:
         return null;
     }
-
-    return (
-      <FlatList
-        data={data}
-        keyExtractor={(item) => item.id?.toString() || item}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.modalItem}
-            onPress={() => {
-              onSelect(item);
-              closeModal();
-            }}
-          >
-            <ThemedText>{item.name || item}</ThemedText>
-          </TouchableOpacity>
-        )}
-      />
-    );
-  }, [content, setSelectedDoctor, setSelectedType, setSelectedTime, closeModal]);
-
-  const renderSelectButton = useCallback(
-    (label: string, value: string, onPress: () => void) => (
-      <TouchableOpacity style={[styles.selectButton, { borderColor }]} onPress={onPress}>
-        <ThemedText style={styles.selectButtonText}>{value || label}</ThemedText>
-        <Ionicons name="chevron-down" size={24} color={tintColor} />
-      </TouchableOpacity>
-    ),
-    [borderColor, tintColor]
-  );
+  }, [modalContent, modalVisible, closeModal, backgroundColor, textColor, tintColor]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <ThemedText style={styles.title} type="title">
-          Schedule Appointment
-        </ThemedText>
-
-        <ThemedView style={styles.calendarContainer}>
-          <Calendar
-            onDayPress={(day: { dateString: string }) => setSelectedDate(day.dateString)}
-            markedDates={{
-              [selectedDate]: { selected: true, selectedColor: tintColor },
-            }}
-            theme={{
-              backgroundColor,
-              calendarBackground: backgroundColor,
-              textSectionTitleColor: textColor,
-              selectedDayBackgroundColor: tintColor,
-              selectedDayTextColor: backgroundColor,
-              todayTextColor: tintColor,
-              dayTextColor: textColor,
-              textDisabledColor: "#d9e1e8",
-              arrowColor: tintColor,
-              monthTextColor: textColor,
-              indicatorColor: tintColor,
-            }}
+      <LinearGradient
+        colors={[backgroundColor, `${tintColor}20`, `${accentColor}40`]}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+      <AppointmentHeader animatedIndex={animatedIndex} tintColor={tintColor} />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} onScroll={handleScroll} scrollEventThrottle={16}>
+        <AppointmentCalendar
+          selectedDate={selectedDate}
+          onDateSelect={(day: DateData) => setSelectedDate(day.dateString)}
+          markedDates={markedDates}
+          theme={{ backgroundColor, textColor, tintColor }}
+        />
+        <BlurView intensity={20} tint="light" style={styles.selectionContainer}>
+          <AppointmentSelections
+            selectedDoctor={selectedDoctor}
+            selectedType={selectedType}
+            selectedTime={selectedTime}
+            onSelectDoctor={() => openModal("doctor")}
+            onSelectType={() => openModal("type")}
+            onSelectTime={() => openModal("time")}
+            tintColor={tintColor}
+            accentColor={accentColor}
           />
-        </ThemedView>
+        </BlurView>
 
-        {renderSelectButton("Select Time", selectedTime, () => openModal("time"))}
-        {renderSelectButton("Select Doctor", selectedDoctor, () => openModal("doctor"))}
-        {renderSelectButton("Select Appointment Type", selectedType, () => openModal("type"))}
-
-        <ThemedView style={styles.summaryContainer}>
-          <ThemedText style={styles.summaryTitle} type="subtitle">
-            Appointment Summary
-          </ThemedText>
-          <ThemedText>Date: {selectedDate || "Not selected"}</ThemedText>
-          <ThemedText>Time: {selectedTime || "Not selected"}</ThemedText>
-          <ThemedText>Doctor: {selectedDoctor || "Not selected"}</ThemedText>
-          <ThemedText>Type: {selectedType || "Not selected"}</ThemedText>
-        </ThemedView>
-
-        <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
-          <View
-            style={[
-              styles.confirmButtonGradient,
-              {
-                backgroundColor: tintColor,
-                elevation: 3,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 3.84,
-              },
-            ]}
-          >
-            <Ionicons name="checkmark-circle" size={24} color={backgroundColor} />
-            <ThemedText style={styles.confirmButtonText}>Confirm Appointment</ThemedText>
-          </View>
-        </TouchableOpacity>
+        <AppointmentSummary selectedDate={selectedDate} selectedDoctor={selectedDoctor} selectedType={selectedType} selectedTime={selectedTime} />
+        <ConfirmButton onPress={handleConfirm} backgroundColor={backgroundColor} tintColor={tintColor} accentColor={accentColor} />
       </ScrollView>
-
-      <Modal animationType="slide" transparent={true} visible={isVisible} onRequestClose={closeModal}>
-        <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, { backgroundColor }]}>
-            <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
-              <Ionicons name="close" size={24} color={textColor} />
-            </TouchableOpacity>
-            {renderModalContent()}
-          </View>
-        </View>
-      </Modal>
+      {renderModalContent()}
     </SafeAreaView>
   );
 };
@@ -236,86 +188,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
     paddingBottom: 40,
   },
-  title: {
-    marginBottom: 20,
-    textAlign: "center",
-    fontSize: 28,
-    fontWeight: "bold",
-  },
-  calendarContainer: {
-    marginBottom: 20,
-    borderRadius: 15,
-    overflow: "hidden",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  summaryContainer: {
-    marginVertical: 20,
-    padding: 15,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-  },
-  summaryTitle: {
-    marginBottom: 10,
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  selectButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 15,
-    marginBottom: 15,
-    borderRadius: 10,
-    borderWidth: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-  },
-  selectButtonText: {
+  modalItemText: {
     fontSize: 16,
   },
-  confirmButton: {
-    marginTop: 20,
-    borderRadius: 10,
-    overflow: "hidden",
-  },
-  confirmButtonGradient: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 15,
-  },
-  confirmButtonText: {
+  modalItemSubtext: {
+    fontSize: 14,
+    opacity: 0.7,
     marginLeft: 10,
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "white",
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  modalItemIcon: {
+    marginRight: 10,
   },
-  modalContent: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    maxHeight: "50%",
-  },
-  closeButton: {
-    alignSelf: "flex-end",
-    padding: 10,
-  },
-  modalItem: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(224, 224, 224, 0.5)",
+  selectionContainer: {
+    margin: 20,
+    borderRadius: 20,
+    overflow: "hidden",
   },
 });
 
