@@ -92,6 +92,14 @@ const PatientProfileScreen: React.FC = () => {
     Alert.alert("Success", "Profile updated successfully!");
   }, [personalInfo, medicalHistory, notificationSettings]);
 
+  const handleNavigateToSettings = useCallback(() => {
+    router.push("/settings");
+  }, []);
+
+  const handleNavigateToNotifications = useCallback(() => {
+    router.push("/notifications");
+  }, []);
+
   const renderSection = useCallback(
     (title: string, children: React.ReactNode) => (
       <ThemedView style={styles.section}>
@@ -122,6 +130,13 @@ const PatientProfileScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={24} color={tintColor} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.settingsButton} onPress={handleNavigateToSettings}>
+          <Ionicons name="settings-outline" size={24} color={tintColor} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.notificationsButton} onPress={handleNavigateToNotifications}>
+          <Ionicons name="notifications-outline" size={24} color={tintColor} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.profileImageContainer} onPress={handleImagePicker}>
@@ -195,6 +210,18 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 20,
     right: 20,
+    zIndex: 1,
+  },
+  settingsButton: {
+    position: "absolute",
+    top: 20,
+    left: 20,
+    zIndex: 1,
+  },
+  notificationsButton: {
+    position: "absolute",
+    top: 20,
+    left: 60,
     zIndex: 1,
   },
   profileImageContainer: {

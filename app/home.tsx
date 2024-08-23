@@ -6,10 +6,12 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useLanguage } from "@/context/LanguageContext";
 
 const Home = () => {
   const backgroundColor = useThemeColor({}, "background");
   const tintColor = useThemeColor({}, "tint");
+  const { t } = useLanguage();
 
   const handleScheduleAppointment = () => {
     router.push("/appointment");
@@ -19,12 +21,19 @@ const Home = () => {
     router.push("/virtualConsultation");
   };
 
+  const handleNavigateToNotifications = () => {
+    router.push("/notifications");
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor }}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <ThemedText style={styles.welcomeText} type="title">
-          Welcome, Patient
+          {t("welcome")}, Patient
         </ThemedText>
+        <TouchableOpacity style={styles.notificationsButton} onPress={handleNavigateToNotifications}>
+          <Ionicons name="notifications-outline" size={24} color={tintColor} />
+        </TouchableOpacity>
 
         <View style={styles.quickActionsContainer}>
           <TouchableOpacity style={[styles.actionButton, { backgroundColor: tintColor }]} onPress={handleScheduleAppointment}>
@@ -54,17 +63,33 @@ const Home = () => {
           </ThemedView>
         </TouchableOpacity>
 
-        <ThemedView style={styles.sectionContainer}>
-          <ThemedText style={styles.sectionTitle} type="subtitle">
-            Educational Content
-          </ThemedText>
-          <TouchableOpacity>
-            <ThemedText style={{ color: tintColor }}>5 Tips for Healthy Skin</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <ThemedText style={{ color: tintColor }}>Understanding Acne: Causes and Treatments</ThemedText>
-          </TouchableOpacity>
-        </ThemedView>
+        <TouchableOpacity onPress={() => router.push("/educationalContent")}>
+          <ThemedView style={styles.sectionContainer}>
+            <ThemedText style={styles.sectionTitle} type="subtitle">
+              Educational Content
+            </ThemedText>
+            <ThemedText style={{ color: tintColor }}>Explore skincare tips and tutorials</ThemedText>
+            <ThemedText style={{ color: tintColor }}>Learn from our experts</ThemedText>
+          </ThemedView>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push("/chatSupport")}>
+          <ThemedView style={styles.sectionContainer}>
+            <ThemedText style={styles.sectionTitle} type="subtitle">
+              Chat Support
+            </ThemedText>
+            <ThemedText style={{ color: tintColor }}>Get help from our support team</ThemedText>
+          </ThemedView>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push("/feedbackReviews")}>
+          <ThemedView style={styles.sectionContainer}>
+            <ThemedText style={styles.sectionTitle} type="subtitle">
+              Feedback & Reviews
+            </ThemedText>
+            <ThemedText style={{ color: tintColor }}>Share your experience and read patient reviews</ThemedText>
+          </ThemedView>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -108,6 +133,12 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginBottom: 10,
+  },
+  notificationsButton: {
+    position: "absolute",
+    top: 20,
+    right: 20,
+    zIndex: 1,
   },
 });
 
