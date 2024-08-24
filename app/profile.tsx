@@ -246,11 +246,12 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily: "Inter-Regular",
     marginBottom: 5,
   },
   email: {
     fontSize: 16,
+    fontFamily: "Inter-Regular",
     opacity: 0.7,
   },
   section: {
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "Inter-Regular",
     marginBottom: 15,
   },
   inputContainer: {
@@ -270,18 +271,21 @@ const styles = StyleSheet.create({
   inputLabel: {
     marginBottom: 5,
     fontSize: 16,
+    fontFamily: "Inter-Regular",
   },
   input: {
     borderWidth: 1,
     borderRadius: 10,
     padding: 12,
     fontSize: 16,
+    fontFamily: "Inter-Regular",
   },
   switchContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 15,
+    fontFamily: "Inter-Regular",
   },
   saveButton: {
     marginHorizontal: 20,
@@ -297,7 +301,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: "white",
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "Inter-Regular",
   },
 });
 
