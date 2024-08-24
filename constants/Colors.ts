@@ -13,11 +13,11 @@ const accentDark = '#4FE0DD';
 
 // Background colors
 const backgroundLight = '#F8F9FA';
-const backgroundDark = '#1A1C20';
+const backgroundDark = '#F8F9FA';
 
 // Text colors
-const textLight = '#333333';
-const textDark = '#E2E8F0';
+const text = '#333333';
+// const textDark = '#E2E8F0';
 
 // Card colors
 const cardLight = '#FFFFFF';
@@ -25,7 +25,7 @@ const cardDark = '#2D3748';
 
 export const Colors = {
   light: {
-    text: textLight,
+    text: text,
     background: backgroundLight,
     tint: primaryLight,
     accent: accentLight,
@@ -36,7 +36,7 @@ export const Colors = {
     border: '#E2E8F0',
   },
   dark: {
-    text: textDark,
+    text: text,
     background: backgroundDark,
     tint: primaryDark,
     accent: accentDark,
