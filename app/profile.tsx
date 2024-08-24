@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { ScrollView, StyleSheet, View, TouchableOpacity, Image, TextInput, Alert, Switch } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Image, TextInput, Alert, Switch, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { ThemedText } from "@/components/ThemedText";
@@ -7,6 +7,8 @@ import { ThemedView } from "@/components/ThemedView";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 
 interface PersonalInfo {
   name: string;
@@ -48,6 +50,7 @@ const PatientProfileScreen: React.FC = () => {
   const backgroundColor = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
   const tintColor = useThemeColor({}, "tint");
+  const accentColor = useThemeColor({}, "accent");
 
   const handleLogout = useCallback(() => {
     Alert.alert(
@@ -58,13 +61,20 @@ const PatientProfileScreen: React.FC = () => {
         {
           text: "Logout",
           onPress: () => {
-            // Perform logout logic here
             router.replace("/auth");
           },
         },
       ],
       { cancelable: false }
     );
+  }, []);
+
+  const handleNavigateToSettings = useCallback(() => {
+    router.push("/settings");
+  }, []);
+
+  const handleNavigateToNotifications = useCallback(() => {
+    router.push("/notifications");
   }, []);
 
   const handleImagePicker = useCallback(async () => {
@@ -87,38 +97,19 @@ const PatientProfileScreen: React.FC = () => {
   }, []);
 
   const handleSave = useCallback(() => {
-    // Here you would typically send the updated data to your backend
     console.log("Saving profile data:", { personalInfo, medicalHistory, notificationSettings });
     Alert.alert("Success", "Profile updated successfully!");
   }, [personalInfo, medicalHistory, notificationSettings]);
-
-  const handleNavigateToSettings = useCallback(() => {
-    router.push("/settings");
-  }, []);
-
-  const handleNavigateToNotifications = useCallback(() => {
-    router.push("/notifications");
-  }, []);
-
-  const renderSection = useCallback(
-    (title: string, children: React.ReactNode) => (
-      <ThemedView style={styles.section}>
-        <ThemedText style={styles.sectionTitle}>{title}</ThemedText>
-        {children}
-      </ThemedView>
-    ),
-    []
-  );
 
   const renderInput = useCallback(
     (label: string, value: string, onChangeText: (text: string) => void) => (
       <View style={styles.inputContainer}>
         <ThemedText style={styles.inputLabel}>{label}</ThemedText>
         <TextInput
-          style={[styles.input, { color: textColor, borderColor: tintColor }]}
+          style={[styles.input, { color: textColor, borderColor: `${tintColor}50` }]}
           value={value}
           onChangeText={onChangeText}
-          placeholderTextColor={textColor + "80"}
+          placeholderTextColor={`${textColor}80`}
         />
       </View>
     ),
@@ -127,72 +118,82 @@ const PatientProfileScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <LinearGradient
+        colors={[backgroundColor, `${tintColor}40`, `${accentColor}90`]}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color={tintColor} />
-        </TouchableOpacity>
+        <View style={styles.header}>
+          <TouchableOpacity style={[styles.headerButton, styles.logoutButton]} onPress={handleLogout}>
+            <BlurView intensity={80} tint="light" style={styles.blurView}>
+              <Ionicons name="log-out-outline" size={24} color={tintColor} />
+            </BlurView>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.headerButton, styles.settingsButton]} onPress={handleNavigateToSettings}>
+            <BlurView intensity={80} tint="light" style={styles.blurView}>
+              <Ionicons name="settings-outline" size={24} color={tintColor} />
+            </BlurView>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.headerButton, styles.notificationsButton]} onPress={handleNavigateToNotifications}>
+            <BlurView intensity={80} tint="light" style={styles.blurView}>
+              <Ionicons name="notifications-outline" size={24} color={tintColor} />
+            </BlurView>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.profileImageContainer} onPress={handleImagePicker}>
+            {profileImage ? (
+              <Image source={{ uri: profileImage }} style={styles.profileImage} />
+            ) : (
+              <LinearGradient colors={[tintColor, `${tintColor}40`]} style={styles.profileImagePlaceholder}>
+                <Ionicons name="person-outline" size={40} color={backgroundColor} />
+              </LinearGradient>
+            )}
+          </TouchableOpacity>
+          <ThemedText style={styles.name}>{personalInfo.name}</ThemedText>
+          <ThemedText style={styles.email}>{personalInfo.email}</ThemedText>
+        </View>
 
-        <TouchableOpacity style={styles.settingsButton} onPress={handleNavigateToSettings}>
-          <Ionicons name="settings-outline" size={24} color={tintColor} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.notificationsButton} onPress={handleNavigateToNotifications}>
-          <Ionicons name="notifications-outline" size={24} color={tintColor} />
-        </TouchableOpacity>
+        <ThemedView style={styles.section}>
+          <ThemedText style={styles.sectionTitle}>Personal Information</ThemedText>
+          {renderInput("Name", personalInfo.name, (text) => setPersonalInfo((prev) => ({ ...prev, name: text })))}
+          {renderInput("Age", personalInfo.age, (text) => setPersonalInfo((prev) => ({ ...prev, age: text })))}
+          {renderInput("Email", personalInfo.email, (text) => setPersonalInfo((prev) => ({ ...prev, email: text })))}
+          {renderInput("Phone", personalInfo.phone, (text) => setPersonalInfo((prev) => ({ ...prev, phone: text })))}
+        </ThemedView>
 
-        <TouchableOpacity style={styles.profileImageContainer} onPress={handleImagePicker}>
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={styles.profileImage} />
-          ) : (
-            <View style={[styles.profileImagePlaceholder, { backgroundColor: tintColor }]}>
-              <Ionicons name="camera-outline" size={40} color={backgroundColor} />
-            </View>
-          )}
-        </TouchableOpacity>
+        <ThemedView style={styles.section}>
+          <ThemedText style={styles.sectionTitle}>Medical History</ThemedText>
+          {renderInput("Conditions", medicalHistory.conditions, (text) => setMedicalHistory((prev) => ({ ...prev, conditions: text })))}
+          {renderInput("Medications", medicalHistory.medications, (text) => setMedicalHistory((prev) => ({ ...prev, medications: text })))}
+        </ThemedView>
 
-        {renderSection(
-          "Personal Information",
-          <>
-            {renderInput("Name", personalInfo.name, (text) => setPersonalInfo((prev) => ({ ...prev, name: text })))}
-            {renderInput("Age", personalInfo.age, (text) => setPersonalInfo((prev) => ({ ...prev, age: text })))}
-            {renderInput("Email", personalInfo.email, (text) => setPersonalInfo((prev) => ({ ...prev, email: text })))}
-            {renderInput("Phone", personalInfo.phone, (text) => setPersonalInfo((prev) => ({ ...prev, phone: text })))}
-          </>
-        )}
+        <ThemedView style={styles.section}>
+          <ThemedText style={styles.sectionTitle}>Notification Settings</ThemedText>
+          <View style={styles.switchContainer}>
+            <ThemedText>Appointment Reminders</ThemedText>
+            <Switch
+              value={notificationSettings.appointments}
+              onValueChange={(value) => setNotificationSettings((prev) => ({ ...prev, appointments: value }))}
+              trackColor={{ false: `${textColor}30`, true: tintColor }}
+              thumbColor={notificationSettings.appointments ? accentColor : `${textColor}80`}
+            />
+          </View>
+          <View style={styles.switchContainer}>
+            <ThemedText>Medication Reminders</ThemedText>
+            <Switch
+              value={notificationSettings.medications}
+              onValueChange={(value) => setNotificationSettings((prev) => ({ ...prev, medications: value }))}
+              trackColor={{ false: `${textColor}30`, true: tintColor }}
+              thumbColor={notificationSettings.medications ? accentColor : `${textColor}80`}
+            />
+          </View>
+        </ThemedView>
 
-        {renderSection(
-          "Medical History",
-          <>
-            {renderInput("Conditions", medicalHistory.conditions, (text) => setMedicalHistory((prev) => ({ ...prev, conditions: text })))}
-            {renderInput("Medications", medicalHistory.medications, (text) => setMedicalHistory((prev) => ({ ...prev, medications: text })))}
-          </>
-        )}
-
-        {renderSection(
-          "Notification Settings",
-          <>
-            <View style={styles.switchContainer}>
-              <ThemedText>Appointment Reminders</ThemedText>
-              <Switch
-                value={notificationSettings.appointments}
-                onValueChange={(value) => setNotificationSettings((prev) => ({ ...prev, appointments: value }))}
-                trackColor={{ false: "#767577", true: tintColor }}
-                thumbColor={notificationSettings.appointments ? "#f4f3f4" : "#f4f3f4"}
-              />
-            </View>
-            <View style={styles.switchContainer}>
-              <ThemedText>Medication Reminders</ThemedText>
-              <Switch
-                value={notificationSettings.medications}
-                onValueChange={(value) => setNotificationSettings((prev) => ({ ...prev, medications: value }))}
-                trackColor={{ false: "#767577", true: tintColor }}
-                thumbColor={notificationSettings.medications ? "#f4f3f4" : "#f4f3f4"}
-              />
-            </View>
-          </>
-        )}
-
-        <TouchableOpacity style={[styles.saveButton, { backgroundColor: tintColor }]} onPress={handleSave}>
-          <ThemedText style={styles.saveButtonText}>Save Changes</ThemedText>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <LinearGradient colors={[tintColor, `${tintColor}40`]} style={styles.saveButtonGradient}>
+            <ThemedText style={styles.saveButtonText}>Save Changes</ThemedText>
+          </LinearGradient>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -204,28 +205,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
+    paddingBottom: 40,
+  },
+  header: {
+    alignItems: "center",
+    paddingVertical: 30,
+  },
+  headerButton: {
+    position: "absolute",
+    top: 20,
+    zIndex: 1,
   },
   logoutButton: {
-    position: "absolute",
-    top: 20,
     right: 20,
-    zIndex: 1,
   },
   settingsButton: {
-    position: "absolute",
-    top: 20,
     left: 20,
-    zIndex: 1,
   },
   notificationsButton: {
-    position: "absolute",
-    top: 20,
-    left: 60,
-    zIndex: 1,
+    left: 70,
+  },
+  blurView: {
+    padding: 10,
+    borderRadius: 20,
   },
   profileImageContainer: {
-    alignItems: "center",
     marginBottom: 20,
   },
   profileImage: {
@@ -240,37 +244,55 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  name: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  email: {
+    fontSize: 16,
+    opacity: 0.7,
+  },
   section: {
-    marginBottom: 20,
+    margin: 20,
+    padding: 20,
+    borderRadius: 15,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 15,
   },
   inputContainer: {
-    marginBottom: 10,
+    marginBottom: 15,
   },
   inputLabel: {
     marginBottom: 5,
+    fontSize: 16,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 5,
-    padding: 10,
+    borderRadius: 10,
+    padding: 12,
     fontSize: 16,
   },
   switchContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 15,
   },
   saveButton: {
-    padding: 15,
-    borderRadius: 10,
-    alignItems: "center",
+    marginHorizontal: 20,
     marginTop: 20,
+    overflow: "hidden",
+    borderRadius: 25,
+    marginBottom: 40,
+  },
+  saveButtonGradient: {
+    padding: 15,
+    alignItems: "center",
   },
   saveButtonText: {
     color: "white",
