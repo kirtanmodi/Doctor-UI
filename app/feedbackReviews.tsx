@@ -1,44 +1,53 @@
-import React, { useState, useEffect } from "react";
-import { ScrollView, StyleSheet, View, TouchableOpacity, TextInput, FlatList } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, StyleSheet, TouchableOpacity, TextInput, FlatList, Animated, Easing, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface Review {
   id: string;
   rating: number;
   comment: string;
-  service: string;
   date: Date;
 }
 
 const FeedbackReviews: React.FC = () => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
-  const [service, setService] = useState("");
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [filterService, setFilterService] = useState("");
-  const [filterDate, setFilterDate] = useState("");
 
   const backgroundColor = useThemeColor({}, "background");
-  const textColor = useThemeColor({}, "text");
   const tintColor = useThemeColor({}, "tint");
+  const textColor = useThemeColor({}, "text");
+  const accentColor = useThemeColor({}, "accent");
+
+  const animatedValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Simulating fetching reviews from an API
     const mockReviews: Review[] = [
-      { id: "1", rating: 5, comment: "Great service!", service: "Consultation", date: new Date(2023, 3, 15) },
-      { id: "2", rating: 4, comment: "Good experience overall.", service: "Treatment", date: new Date(2023, 3, 10) },
+      { id: "1", rating: 5, comment: "Exceptional service!", date: new Date(2023, 3, 15) },
+      { id: "2", rating: 4, comment: "Great experience overall.", date: new Date(2023, 3, 10) },
     ];
     setReviews(mockReviews);
+
+    // Animate the gradient
+    Animated.loop(
+      Animated.timing(animatedValue, {
+        toValue: 1,
+        duration: 10000,
+        easing: Easing.linear,
+        useNativeDriver: false,
+      })
+    ).start();
   }, []);
 
   const handleSubmitFeedback = () => {
-    if (rating === 0 || !comment.trim() || !service) {
-      alert("Please fill in all fields");
+    if (rating === 0 || !comment.trim()) {
+      // Show an error message
       return;
     }
 
@@ -46,176 +55,146 @@ const FeedbackReviews: React.FC = () => {
       id: Date.now().toString(),
       rating,
       comment,
-      service,
       date: new Date(),
     };
 
     setReviews((prevReviews) => [newReview, ...prevReviews]);
     setRating(0);
     setComment("");
-    setService("");
-    alert("Thank you for your feedback!");
   };
 
-  const renderStars = (count: number) => {
-    return Array(5)
-      .fill(0)
-      .map((_, index) => (
-        <TouchableOpacity key={index} onPress={() => setRating(index + 1)}>
-          <Ionicons name={index < count ? "star" : "star-outline"} size={30} color={index < count ? tintColor : textColor} />
-        </TouchableOpacity>
-      ));
+  const renderStars = (count: number, onPress?: (index: number) => void) => {
+    return (
+      <View style={styles.starContainer}>
+        {[1, 2, 3, 4, 5].map((index) => (
+          <TouchableOpacity key={index} onPress={() => onPress && onPress(index)} style={styles.starButton}>
+            <Ionicons name={index <= count ? "star" : "star-outline"} size={24} color={tintColor} />
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
   };
 
   const renderReview = ({ item }: { item: Review }) => (
-    <ThemedView style={styles.reviewItem}>
-      <View style={styles.reviewHeader}>
-        <ThemedText style={styles.reviewService}>{item.service}</ThemedText>
-        <ThemedText style={styles.reviewDate}>{item.date.toLocaleDateString()}</ThemedText>
-      </View>
-      <View style={styles.starContainer}>{renderStars(item.rating)}</View>
+    <BlurView intensity={30} tint="light" style={styles.reviewItem}>
+      {renderStars(item.rating)}
       <ThemedText style={styles.reviewComment}>{item.comment}</ThemedText>
-    </ThemedView>
+      <ThemedText style={styles.reviewDate}>{item.date.toLocaleDateString()}</ThemedText>
+    </BlurView>
   );
 
-  const filteredReviews = reviews.filter((review) => {
-    if (filterService && review.service !== filterService) return false;
-    if (filterDate) {
-      const reviewDate = review.date.toISOString().split("T")[0];
-      if (reviewDate !== filterDate) return false;
-    }
-    return true;
+  const interpolatedColor = animatedValue.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [`${tintColor}40`, `${tintColor}80`, `${tintColor}40`],
   });
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <ThemedText style={styles.title}>Feedback & Reviews</ThemedText>
+      <Animated.View style={[StyleSheet.absoluteFill, { opacity: 0.6 }]}>
+        <LinearGradient
+          colors={[backgroundColor, `${tintColor}40`, `${accentColor}90`]}
+          style={StyleSheet.absoluteFill}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+      </Animated.View>
 
-        <ThemedView style={styles.feedbackForm}>
-          <ThemedText style={styles.sectionTitle}>Leave Your Feedback</ThemedText>
-          <View style={styles.starContainer}>{renderStars(rating)}</View>
-          <Picker selectedValue={service} onValueChange={(itemValue) => setService(itemValue)} style={[styles.picker, { color: textColor }]}>
-            <Picker.Item label="Select a service" value="" />
-            <Picker.Item label="Consultation" value="Consultation" />
-            <Picker.Item label="Treatment" value="Treatment" />
-            <Picker.Item label="Follow-up" value="Follow-up" />
-          </Picker>
-          <TextInput
-            style={[styles.input, { color: textColor, borderColor: tintColor }]}
-            placeholder="Your comments"
-            placeholderTextColor={textColor + "80"}
-            value={comment}
-            onChangeText={setComment}
-            multiline
-          />
-          <TouchableOpacity style={[styles.submitButton, { backgroundColor: tintColor }]} onPress={handleSubmitFeedback}>
-            <ThemedText style={[styles.submitButtonText, { color: backgroundColor }]}>Submit Feedback</ThemedText>
-          </TouchableOpacity>
-        </ThemedView>
+      <ThemedText style={styles.title}>Feedback & Reviews</ThemedText>
 
-        <ThemedView style={styles.reviewsSection}>
-          <ThemedText style={styles.sectionTitle}>Patient Reviews</ThemedText>
-          <FlatList
-            data={reviews}
-            renderItem={renderReview}
-            keyExtractor={(item) => item.id}
-            ListEmptyComponent={<ThemedText style={styles.emptyText}>No reviews found</ThemedText>}
-          />
-        </ThemedView>
-      </ScrollView>
+      <BlurView intensity={50} tint="light" style={styles.feedbackForm}>
+        <ThemedText style={styles.sectionTitle}>Leave Your Feedback</ThemedText>
+        {renderStars(rating, setRating)}
+        <TextInput
+          style={[styles.input, { color: textColor, borderColor: tintColor }]}
+          placeholder="Your comments"
+          placeholderTextColor={`${textColor}80`}
+          value={comment}
+          onChangeText={setComment}
+          multiline
+        />
+        <TouchableOpacity style={[styles.submitButton, { backgroundColor: tintColor }]} onPress={handleSubmitFeedback}>
+          <ThemedText style={styles.submitButtonText}>Submit Feedback</ThemedText>
+        </TouchableOpacity>
+      </BlurView>
+
+      <ThemedText style={styles.sectionTitle}>Recent Reviews</ThemedText>
+      <FlatList
+        data={reviews}
+        renderItem={renderReview}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.reviewsList}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   );
 };
 
+const { width } = Dimensions.get("window");
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  scrollContent: {
     padding: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 25,
     fontWeight: "bold",
-    textAlign: "center",
     marginBottom: 20,
+    textAlign: "center",
+    fontFamily: "Inter-Regular",
   },
   sectionTitle: {
     fontSize: 20,
+    fontFamily: "Inter-Regular",
     fontWeight: "bold",
     marginBottom: 10,
   },
   feedbackForm: {
-    marginBottom: 30,
+    padding: 20,
+    borderRadius: 15,
+    marginBottom: 20,
   },
   starContainer: {
     flexDirection: "row",
     justifyContent: "center",
     marginBottom: 10,
   },
-  picker: {
-    marginBottom: 10,
+  starButton: {
+    padding: 5,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 10,
     padding: 10,
     marginBottom: 10,
     minHeight: 100,
   },
   submitButton: {
     padding: 15,
-    borderRadius: 5,
+    borderRadius: 10,
     alignItems: "center",
   },
   submitButtonText: {
+    color: "white",
     fontSize: 16,
     fontWeight: "bold",
   },
-  reviewsSection: {
-    flex: 1,
-  },
-  filterContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  filterPicker: {
-    flex: 1,
-    marginRight: 10,
-  },
-  filterInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 5,
-    padding: 10,
+  reviewsList: {
+    paddingBottom: 20,
   },
   reviewItem: {
     marginBottom: 15,
-    padding: 10,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: "rgba(0, 0, 0, 0.1)",
-  },
-  reviewHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 5,
-  },
-  reviewService: {
-    fontWeight: "bold",
-  },
-  reviewDate: {
-    opacity: 0.7,
+    padding: 15,
+    borderRadius: 15,
   },
   reviewComment: {
-    marginTop: 5,
+    marginTop: 10,
+    marginBottom: 5,
   },
-  emptyText: {
-    textAlign: "center",
-    marginTop: 20,
+  reviewDate: {
+    fontSize: 12,
     opacity: 0.7,
+    alignSelf: "flex-end",
   },
 });
 
